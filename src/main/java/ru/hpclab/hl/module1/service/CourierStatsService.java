@@ -7,28 +7,30 @@ import ru.hpclab.hl.module1.client.ParcelClient;
 import ru.hpclab.hl.module1.dto.*;
 import ru.hpclab.hl.module1.service.cache.CourierCache;
 
+
+import lombok.RequiredArgsConstructor;
+import ru.hpclab.hl.module1.service.statistics.ObservabilityService;
+
 import java.time.Month;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CourierStatsService {
 
     private final CourierClient courierClient;
     private final DeliveryClient deliveryClient;
     private final ParcelClient parcelClient;
 
-    public CourierStatsService(
-            CourierClient courierClient,
-            DeliveryClient deliveryClient,
-            ParcelClient parcelClient
-    ) {
-        this.courierClient = courierClient;
-        this.deliveryClient = deliveryClient;
-        this.parcelClient = parcelClient;
-    }
+
+    private final ObservabilityService observabilityService;
 
     public List<CourierStatsDTO> getStatsForAllCouriers() {
+
+        String metric = getClass().getSimpleName() + ":getStatsForAllCouriers";
+        observabilityService.start(metric);
+
         List<DeliveryDTO> deliveries = Optional.ofNullable(deliveryClient.getAllDeliveries())
                 .map(Arrays::asList)
                 .orElse(Collections.emptyList());
@@ -61,6 +63,9 @@ public class CourierStatsService {
                     .computeIfAbsent(courierName, k -> new HashMap<>())
                     .merge(month, weight, Double::sum);
         }
+
+
+        observabilityService.stop(metric);
 
         return statsByCourier.entrySet().stream()
                 .map(e -> new CourierStatsDTO(e.getKey(), e.getValue()))
