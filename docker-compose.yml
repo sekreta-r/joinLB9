@@ -1,0 +1,37 @@
+services:
+  database:
+    image: postgres:16.1-alpine3.18
+    container_name: pg-docker
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-module1}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    networks:
+      - app-network
+
+  app:
+    image: sekretaria/myproject
+    container_name: spring-boot-app
+    restart: always
+    depends_on:
+      - database
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    mem_limit: ${APP_MEM_LIMIT}
+    cpus: ${APP_CPU_LIMIT}
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DB_HOST:-localhost}:${DB_PORT:-5432}/${DB_NAME}
+      SHOW_SQL: ${SHOW_SQL:-true}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-postgres}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-postgres}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      TOMCAT_THREADS: ${TOMCAT_THREADS:-100}
+
+networks:
+  app-network:
+    driver: bridge
