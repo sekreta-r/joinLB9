@@ -23,7 +23,7 @@ public class ObservabilityService {
     private final Set<Timing> timings = new ConcurrentSkipListSet<>(Comparator.comparing(Timing::getStart));
 
     public ObservabilityService(List<Integer> intervals, int delay) {
-        this.sortedIntervals = intervals.stream().sorted().toList(); // сортировка 1 раз
+        this.sortedIntervals = intervals.stream().sorted().toList();
         this.delay = delay;
     }
 
@@ -35,7 +35,7 @@ public class ObservabilityService {
         Instant now = Instant.now();
         timings.stream()
                 .filter(t -> t.getName().equals(name) && t.getStop().isEmpty())
-                .forEach(t -> t.setStop(Optional.of(now))); // завершаем все незавершённые
+                .forEach(t -> t.setStop(Optional.of(now)));
     }
 
     private void removeOldTimings(Instant now, int maxInterval) {
@@ -78,8 +78,14 @@ public class ObservabilityService {
                             .mapToLong(t -> Duration.between(t.getStart(), t.getStop().get()).toMillis())
                             .average().orElse(0.0);
 
-                    log.info("[{}] {}s: {} = {:.2f} ms ({} ops)",
-                            timestamp, interval, name, avgMillis, filtered.size());
+                    System.out.printf(
+                            "[ %s ] %ds: %s = %.2f ms ( %d )%n",
+                            timestamp,
+                            interval,
+                            name,
+                            avgMillis,
+                            filtered.size()
+                    );
                 }
             }
         }

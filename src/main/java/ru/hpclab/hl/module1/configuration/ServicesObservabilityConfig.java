@@ -12,17 +12,16 @@ import java.util.stream.Collectors;
 
 @Configuration
 public class ServicesObservabilityConfig {
-
     @Value("${observability.intervals:10,30,60}")
     private String intervalsProperty;
 
-    @Value("${service.statistic.observability.delay:30000}")
-    private int observabilityDelay;
+    @Value("${service.statistic.observability.delay:3000}")
+    private int observability_delay;
 
     @Bean
     public List<Integer> intervals() {
-        return Arrays.stream(intervalsProperty.split(","))
-                .map(String::trim)
+        String[] intervalsString = intervalsProperty.split(",");
+        return Arrays.stream(intervalsString)
                 .map(Integer::parseInt)
                 .collect(Collectors.toList());
     }
@@ -30,6 +29,6 @@ public class ServicesObservabilityConfig {
     @Bean
     @ConditionalOnProperty(prefix = "statistics", name = "observability", havingValue = "true")
     public ObservabilityService observabilityService(List<Integer> intervals) {
-        return new ObservabilityService(intervals, observabilityDelay);
+        return new ObservabilityService(intervals, observability_delay);
     }
 }
