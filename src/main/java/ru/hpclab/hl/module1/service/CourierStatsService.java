@@ -35,7 +35,6 @@ public class CourierStatsService {
                 .map(Arrays::asList)
                 .orElse(Collections.emptyList());
 
-        Map<Long, String> courierNamesById = new HashMap<>();
         Map<String, Map<Month, Double>> statsByCourier = new HashMap<>();
 
         for (DeliveryDTO delivery : deliveries) {
@@ -45,17 +44,11 @@ public class CourierStatsService {
             if (parcel == null) continue;
 
             Long courierId = delivery.getCourierId();
-            CourierDTO courier = courierNamesById.containsKey(courierId)
-                    ? null
-                    : getCourierById(courierId);
+            CourierDTO courier = getCourierById(courierId);
 
-            if (courier != null) {
-                courierNamesById.putIfAbsent(courierId, courier.getFullName());
-            }
+            if (courier == null || courier.getFullName() == null) continue;
 
-            String courierName = courierNamesById.get(courierId);
-            if (courierName == null) continue;
-
+            String courierName = courier.getFullName();
             Month month = delivery.getDeliveryDate().getMonth();
             double weight = parcel.getWeight();
 
